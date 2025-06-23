@@ -1,15 +1,26 @@
 package vista;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import modelo.Celebracion;
+
 
 public class PrincipalGUI extends javax.swing.JFrame {
 
     private JTabbedPane pestañas;
+    
+    private ArrayList<Celebracion> listaCelebraciones;
+    private int siguienteId;
+
 
     public PrincipalGUI() {
         initComponents();
         setTitle("Registro de Celebraciones Internacionales");
         setLocationRelativeTo(null); // Centra la ventana en pantalla
+        
+        // Inicializa la lista y el contador de IDs
+        listaCelebraciones = new ArrayList<>();
+        siguienteId = 1; // El primer ID será 1
     }
 
     @SuppressWarnings("unchecked")
