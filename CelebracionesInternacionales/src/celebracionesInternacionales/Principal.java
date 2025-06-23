@@ -1,8 +1,13 @@
-
 package celebracionesInternacionales;
+
+import vista.PrincipalGUI;
 
 public class Principal {
     public static void main(String[] args) {
-        System.out.println("¡Proyecto Celebraciones Internacionales iniciado!");
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new PrincipalGUI().setVisible(true);
+            }
+        });
     }
 }
