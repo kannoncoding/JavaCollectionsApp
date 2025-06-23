@@ -1,0 +1,57 @@
+# Visual Studio and .NET specific ignores
+# -------------------------------------
+
+# Visual Studio Solution User Options (VS 2017 and earlier)
+*.suo
+# Visual Studio user-specific settings for projects (often in .csproj.user)
+*.user
+
+# Visual Studio temporary files and caches (THE KEY TO YOUR PREVIOUS ERROR)
+# The .vs folder is where Visual Studio stores user-specific solution files, caches, etc.
+.vs/
+
+# Build results and intermediate files
+# Binaries for the solution
+[Bb]in/
+# Intermediate build output
+[Oo]bj/
+# Debug information files
+*.pdb
+# Executables
+*.exe
+# Dynamic Link Libraries
+*.dll
+# Program database files
+*.pdb
+# Static libraries
+*.lib
+# Executable info files
+*.exp
+
+# NuGet packages (if using packages.config, not PackageReference)
+# Most modern .NET projects use PackageReference, so 'packages/' folder might not exist at solution root.
+# If it does, ignore it.
+packages/
+# NuGet package restore cache
+.nuget/
+# NuGet generated packages (if you're creating your own packages)
+*.nupkg
+
+# Resharper (and other analysis tools)
+*.DotSettings
+*.DotSettings.user
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Visual Studio Code (if you use it for some files)
+.vscode/
+
+# Other common OS-specific files that Git shouldn't track
+.DS_Store # macOS specific hidden file
+Thumbs.db # Windows specific hidden file (good to include for cross-platform)
+ehthumbs.db
+Desktop.ini
