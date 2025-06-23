@@ -2,6 +2,7 @@ package vista;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import modelo.Celebracion;
 import com.toedter.calendar.JDateChooser;
 
@@ -11,14 +12,21 @@ public class PrincipalGUI extends javax.swing.JFrame {
     private int siguienteId;
 
     // Paneles y componentes para cada pestaña
-    private JPanel panelRegistro, panelListado, panelBusqueda;
-    private JTable tablaListado, tablaBusqueda;
-    private JScrollPane scrollListado, scrollBusqueda;
+    private JPanel panelRegistro, panelListado, panelBusqueda, panelPaisesInvertidos, panelOrdenamiento;
+    private JTable tablaListado, tablaBusqueda, tablaPaisesInvertidos, tablaOrdenamiento;
+    private JScrollPane scrollListado, scrollBusqueda, scrollPaisesInvertidos, scrollOrdenamiento;
+
     // Componentes de búsqueda/edición
     private JTextField txtBuscarPais, txtEditDescripcion, txtEditPais;
     private JButton btnBuscar, btnGuardarEdicion;
     private JDateChooser dateChooserEdit;
     private int indiceEdicion = -1;
+
+    // Países invertidos
+    private JButton btnActualizarPaisesInvertidos;
+
+    // Ordenamiento
+    private JButton btnOrdenarAsc, btnOrdenarDesc;
 
     public PrincipalGUI() {
         initComponents();
@@ -28,7 +36,7 @@ public class PrincipalGUI extends javax.swing.JFrame {
         siguienteId = 1;
     }
 
-    // Método para actualizar el listado general
+    // Actualiza la tabla del listado general
     private void actualizarTablaListado() {
         String[] columnas = {"ID", "Fecha", "Descripción", "País"};
         Object[][] datos = new Object[listaCelebraciones.size()][4];
@@ -44,6 +52,107 @@ public class PrincipalGUI extends javax.swing.JFrame {
             i++;
         }
         tablaListado.setModel(new javax.swing.table.DefaultTableModel(datos, columnas));
+    }
+
+    // Función recursiva para invertir un String
+    private String invertirTextoRecursivo(String texto) {
+        if (texto == null || texto.length() <= 1) {
+            return texto;
+        }
+        return invertirTextoRecursivo(texto.substring(1)) + texto.charAt(0);
+    }
+
+    // Ordenamiento ascendente (inserción)
+    private ArrayList<Celebracion> ordenarAscendente(ArrayList<Celebracion> listaOriginal) {
+        ArrayList<Celebracion> lista = new ArrayList<>(listaOriginal);
+        for (int i = 1; i < lista.size(); i++) {
+            Celebracion key = lista.get(i);
+            int j = i - 1;
+            while (j >= 0 && compararCelebracionAsc(key, lista.get(j)) < 0) {
+                lista.set(j + 1, lista.get(j));
+                j--;
+            }
+            lista.set(j + 1, key);
+        }
+        return lista;
+    }
+    // Compara por país ascendente, luego fecha ascendente
+    private int compararCelebracionAsc(Celebracion a, Celebracion b) {
+        int cmp = a.getPais().compareToIgnoreCase(b.getPais());
+        if (cmp != 0) return cmp;
+        return a.getFecha().compareTo(b.getFecha());
+    }
+
+    // Ordenamiento descendente (merge sort)
+    private ArrayList<Celebracion> ordenarDescendente(ArrayList<Celebracion> listaOriginal) {
+        ArrayList<Celebracion> lista = new ArrayList<>(listaOriginal);
+        mergeSortDesc(lista, 0, lista.size() - 1);
+        return lista;
+    }
+    private void mergeSortDesc(ArrayList<Celebracion> lista, int left, int right) {
+        if (left < right) {
+            int mid = (left + right) / 2;
+            mergeSortDesc(lista, left, mid);
+            mergeSortDesc(lista, mid + 1, right);
+            merge(lista, left, mid, right);
+        }
+    }
+    
+    private void merge(ArrayList<Celebracion> lista, int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    ArrayList<Celebracion> L = new ArrayList<>();
+    ArrayList<Celebracion> R = new ArrayList<>();
+
+    for (int i = 0; i < n1; i++) L.add(lista.get(left + i));
+    for (int j = 0; j < n2; j++) R.add(lista.get(mid + 1 + j));
+
+    int i = 0, j = 0, k = left;
+
+    while (i < n1 && j < n2) {
+        if (compararCelebracionDesc(L.get(i), R.get(j)) <= 0) {
+            lista.set(k, L.get(i));
+            i++;
+        } else {
+            lista.set(k, R.get(j));
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        lista.set(k, L.get(i));
+        i++; k++;
+    }
+
+    while (j < n2) {
+        lista.set(k, R.get(j));
+        j++; k++;
+    }
+}
+
+    
+    // Compara por país descendente, luego fecha descendente
+    private int compararCelebracionDesc(Celebracion a, Celebracion b) {
+        int cmp = b.getPais().compareToIgnoreCase(a.getPais());
+        if (cmp != 0) return cmp;
+        return b.getFecha().compareTo(a.getFecha());
+    }
+
+    // Muestra el listado ordenado en la tabla de la pestaña Ordenar
+    private void mostrarEnTablaOrdenamiento(ArrayList<Celebracion> lista) {
+        String[] columnas = {"ID", "Fecha", "Descripción", "País"};
+        Object[][] datos = new Object[lista.size()][4];
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        for (int i = 0; i < lista.size(); i++) {
+            Celebracion c = lista.get(i);
+            datos[i][0] = c.getId();
+            datos[i][1] = sdf.format(c.getFecha());
+            datos[i][2] = c.getDescripcion();
+            datos[i][3] = c.getPais();
+        }
+        tablaOrdenamiento.setModel(new javax.swing.table.DefaultTableModel(datos, columnas));
     }
 
     @SuppressWarnings("unchecked")
@@ -146,7 +255,7 @@ public class PrincipalGUI extends javax.swing.JFrame {
         panelBusqueda.add(btnGuardarEdicion);
         pestañas.addTab("Buscar/Editar Celebración", panelBusqueda);
 
-        // LÓGICA DE BÚSQUEDA Y EDICIÓN
+        // Lógica de búsqueda y edición
         btnBuscar.addActionListener(e -> {
             String textoBusqueda = txtBuscarPais.getText().trim().toLowerCase();
             ArrayList<Celebracion> resultados = new ArrayList<>();
@@ -196,11 +305,54 @@ public class PrincipalGUI extends javax.swing.JFrame {
             }
         });
 
-        // ----- PANELES VACÍOS RESTANTES -----
-        JPanel panelPaisesInvertidos = new JPanel();
+        // ----- PANEL PAISES INVERTIDOS -----
+        panelPaisesInvertidos = new JPanel();
+        panelPaisesInvertidos.setLayout(null);
+        tablaPaisesInvertidos = new JTable();
+        scrollPaisesInvertidos = new JScrollPane(tablaPaisesInvertidos);
+        scrollPaisesInvertidos.setBounds(20, 20, 400, 350);
+        panelPaisesInvertidos.add(scrollPaisesInvertidos);
+        btnActualizarPaisesInvertidos = new JButton("Actualizar Países Invertidos");
+        btnActualizarPaisesInvertidos.setBounds(20, 390, 220, 30);
+        panelPaisesInvertidos.add(btnActualizarPaisesInvertidos);
         pestañas.addTab("Países Invertidos", panelPaisesInvertidos);
-        JPanel panelOrdenamiento = new JPanel();
+        btnActualizarPaisesInvertidos.addActionListener(e -> {
+            HashSet<String> paisesUnicos = new HashSet<>();
+            for (Celebracion c : listaCelebraciones) {
+                paisesUnicos.add(c.getPais());
+            }
+            Object[][] datosPI = new Object[paisesUnicos.size()][1];
+            int i = 0;
+            for (String pais : paisesUnicos) {
+                datosPI[i][0] = invertirTextoRecursivo(pais);
+                i++;
+            }
+            String[] colPI = {"País Invertido"};
+            tablaPaisesInvertidos.setModel(new javax.swing.table.DefaultTableModel(datosPI, colPI));
+        });
+
+        // ----- PANEL ORDENAR CELEBRACIONES -----
+        panelOrdenamiento = new JPanel();
+        panelOrdenamiento.setLayout(null);
+        tablaOrdenamiento = new JTable();
+        scrollOrdenamiento = new JScrollPane(tablaOrdenamiento);
+        scrollOrdenamiento.setBounds(20, 20, 730, 400);
+        panelOrdenamiento.add(scrollOrdenamiento);
+        btnOrdenarAsc = new JButton("Ordenar Ascendente (País, Fecha)");
+        btnOrdenarAsc.setBounds(20, 440, 280, 30);
+        panelOrdenamiento.add(btnOrdenarAsc);
+        btnOrdenarDesc = new JButton("Ordenar Descendente (País, Fecha)");
+        btnOrdenarDesc.setBounds(320, 440, 300, 30);
+        panelOrdenamiento.add(btnOrdenarDesc);
         pestañas.addTab("Ordenar Celebraciones", panelOrdenamiento);
+        btnOrdenarAsc.addActionListener(e -> {
+            ArrayList<Celebracion> listaOrdenada = ordenarAscendente(listaCelebraciones);
+            mostrarEnTablaOrdenamiento(listaOrdenada);
+        });
+        btnOrdenarDesc.addActionListener(e -> {
+            ArrayList<Celebracion> listaOrdenada = ordenarDescendente(listaCelebraciones);
+            mostrarEnTablaOrdenamiento(listaOrdenada);
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().add(pestañas);
